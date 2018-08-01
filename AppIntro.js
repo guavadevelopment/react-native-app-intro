@@ -161,13 +161,14 @@ export default class AppIntro extends Component {
     ).start();
   }
   getTransform = (index, offset, level) => {
+    const viewWidth = this.state.viewWidth || windowsWidth;
     const isFirstPage = index === 0;
-    const statRange = isFirstPage ? 0 : windowsWidth * (index - 1);
-    const endRange = isFirstPage ? windowsWidth : windowsWidth * index;
+    const statRange = isFirstPage ? 0 : viewWidth * (index - 1);
+    const endRange = isFirstPage ? viewWidth : viewWidth * index;
     const startOpacity = isFirstPage ? 1 : 0;
     const endOpacity = isFirstPage ? 1 : 1;
-    const leftPosition = isFirstPage ? 0 : windowsWidth / 3;
-    const rightPosition = isFirstPage ? -windowsWidth / 3 : 0;
+    const leftPosition = isFirstPage ? 0 : viewWidth / 3;
+    const rightPosition = isFirstPage ? -viewWidth / 3 : 0;
     const transform = [{
       transform: [
         {
@@ -304,6 +305,11 @@ export default class AppIntro extends Component {
     return this.props.pageArray && this.props.pageArray.length > 0 && Platform.OS === 'android'
   }
 
+  captureLayout(e) {
+    var {width, height} = e.nativeEvent.layout;
+    this.setState({viewWidth: width, viewHeight: height});
+  }
+
   render() {
     const childrens = this.props.children;
     const { pageArray } = this.props;
@@ -316,13 +322,13 @@ export default class AppIntro extends Component {
         pages = childrens.map((children, i) => this.renderChild(children, i, i));
       } else {
         androidPages = childrens.map((children, i) => {
-          const { transform } = this.getTransform(i, -windowsWidth / 3 * 2, 1);
+          const { transform } = this.getTransform(i, -(this.state.viewWidth || windowsWidth) / 3 * 2, 1);
           pages.push(<View key={i} />);
           return (
             <Animated.View key={i} style={[{
               position: 'absolute',
-              height: windowsHeight,
-              width: windowsWidth,
+              height: (this.state.viewHeight || windowsHeight),
+              width: (this.state.viewWidth || windowsWidth),
               top: 0,
             }, {
               ...transform[0],
@@ -340,9 +346,11 @@ export default class AppIntro extends Component {
     }
 
     return (
-      <View>
+      <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0}} onLayout={(e) => this.captureLayout(e)}>
         {androidPages}
         <Swiper
+          width={this.state.viewWidth || windowsWidth}
+          height={this.state.viewHeight || windowsHeight}
           loop={false}
           index={this.props.defaultIndex}
           renderPagination={this.renderPagination}
