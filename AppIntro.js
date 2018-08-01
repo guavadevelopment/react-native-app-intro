@@ -264,13 +264,13 @@ export default class AppIntro extends Component {
     return pageView;
   }
 
-  renderChild = (children, pageIndex, index) => {
+  renderChild = (children, pageIndex, index, stop) => {
     const level = children.props.level || 0;
     const { transform } = this.getTransform(pageIndex, 10, level);
-    const root = children.props.children;
+    const root = React.Children.toArray(children.props.children);
     let nodes = children;
-    if (Array.isArray(root)) {
-      nodes = root.map((node, i) => this.renderChild(node, pageIndex, `${index}_${i}`));
+    if (Array.isArray(root) && stop !== true) {
+      nodes = root.map((node, i) => this.renderChild(node, pageIndex, `${index}_${i}`, true));
     }
     let animatedChild = children;
     if (level !== 0) {
